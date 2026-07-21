@@ -2,7 +2,7 @@
 
 ## SICSS-Nigeria 2026, Day 3 (Wednesday 22 July 2026)
 
-## By Joseph David.
+## By Joseph L. David
 
 Two graphs, each built twice: first by counting words, then with a language
 model doing the part counting cannot do.
