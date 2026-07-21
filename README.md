@@ -3,7 +3,7 @@
 SICSS-Nigeria 2026, Day 3. Joseph David.
 Wednesday 22 July 2026, 13:30–15:30 WAT.
 
-Two pictures, each built twice: first by counting words, then with a language
+Two graphs, each built twice: first by counting words, then with a language
 model doing the part counting cannot do.
 
 | | Data | Counting gives you | The model adds |
@@ -79,8 +79,6 @@ In `docs/`:
 |---|---|---|
 | `Setup_Guide.docx` | participants | installing R, RStudio, packages, and Ollama, with a checklist |
 | `Session_Handout.docx` | participants | a written version of the session, to read alongside or after |
-| `Teaching_Guide.docx` | you | run of show, the three moments that matter, what to do when something fails |
-| `Concept_Reference.docx` | you | every idea explained in full, with the questions people ask and how to answer them |
 
 ---
 
