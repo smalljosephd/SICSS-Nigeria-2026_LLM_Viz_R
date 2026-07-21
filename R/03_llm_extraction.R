@@ -26,7 +26,7 @@
 #   This is worth showing in the session: the prompt is part of the method,
 #   not an afterthought.
 #
-# RUN THIS BEFORE THE SESSION. The answer is cached, so on the day it loads
+# I run this BEFORE THE SESSION. The answer is cached, so on the day it loads
 # from disk in an instant.
 #
 # Needs   :  cache/article.rds, Ollama running with the model pulled
@@ -42,8 +42,8 @@ cat("Article:", article$title, "|", article$n_chars, "characters\n")
 ## ---- The schema: the shape of the answer -------------------------------------
 ## One entity: what it is called, and what kind of thing it is.
 type_entity <- type_object(
-  name = type_string("Entity name as written in the text, e.g. Lagos, Bola Tinubu"),
-  type = type_string("One of: Person, Place, Organisation, Event")
+  name = type_string("Entity name as written in the text, e.g. Lagos, Enugu, Biafra, United States, Bola Tinubu, Chukwuemeka Odumegwu Ojukwu, Obafemi Awolowo, Joseph David, Peter Obi, SICSS, University of Uyo"),
+  type = type_string("One of: Person, Place, Organisation, Event, Institution, Company, Political Party, Group")
 )
 
 ## One relationship: three parts, read as a sentence.
@@ -51,7 +51,7 @@ type_entity <- type_object(
 ##   "Lagos" -> "is the largest city in" -> "Nigeria"
 type_relation <- type_object(
   subject  = type_string("The entity the statement is about"),
-  relation = type_string("Short verb phrase, e.g. is the capital of, member of"),
+  relation = type_string("Short verb phrase, e.g. is the capital of, member of, associated with, party to, joined, associate of"),
   object   = type_string("The entity the subject relates to")
 )
 
@@ -76,27 +76,38 @@ focus_by_article <- list(
   ## and organisations, and the relationships worth pulling out are about who
   ## fought whom, who led what, and which places were involved.
   "Nigerian Civil War" = paste(
-    "Focus on: which people led which side or organisation; which regions,",
-    "states or cities were involved and on which side; which countries or",
-    "bodies supported, supplied or mediated; and which events or operations",
-    "happened at which places."
+    "Focus on: which people or persons led which side or organisation;", 
+    "which regions, states or cities were involved and on which side;", 
+    "which countries or bodies supported, supplied or mediated;", 
+    "and which events or operations happened at which places;",
+    "What was the number of causalty;",
+    "which events led to the war; what triggered the war;",
+    "Who won or lost the war; what actions were taken to end or prevent reoccurent."
   ),
 
   "End SARS" = paste(
     "Focus on: which organisations or units were involved; which people or",
-    "groups led or organised; which places protests or events occurred in;",
+    "groups led or organised the protest; which places protests or events occurred in;",
+    "was caused the protest; what was the response of organisations, governments;",
     "and which bodies investigated, responded or ruled."
   ),
 
   "Nigeria" = paste(
     "Focus on: which places lie inside or border which; which people held",
     "which office; which organisations the country belongs to; and which",
-    "regions are associated with which industries or peoples."
+    "regions are associated with which industries or peoples;",
+    "what is the mainstat of the country's economy;",
+    "who are the political leaders; how are they elected; what is the population of the country;",
+    "how many states and LGA make up the country; what is the religious composition of the country;",
+    "What is the size of the country; what are the major rivers in the country;",
+    "what is the nature of human right in the country."
   ),
 
   "2023 Nigerian general election" = paste(
     "Focus on: which candidate ran for which party; who won and who lost;",
     "who succeeded whom; which bodies organised or ruled on the election;",
+    "what are the main issues the characterised the election;",
+    "what is the nature of the conduct of the election;",
     "and which candidate carried which states or regions."
   )
 )
@@ -138,6 +149,7 @@ passages <- passages[str_count(passages, "\\S+") > 80]   # ignore a short tail
 cat("Reading", length(passages), "passages of about",
     PASSAGE_CHARS, "characters each.\n\n")
 
+## Build/specify your prompt to the LLM
 build_prompt <- function(passage) {
   paste0(
     "Read the passage below and list the named entities and the relationships ",
@@ -145,9 +157,14 @@ build_prompt <- function(passage) {
     focus, "\n\n",
     "Rules:\n",
     "- Only include a relationship the passage states or clearly implies.\n",
-    "- Keep each relation phrase to a few words.\n",
-    "- Prefer specific entities (Enugu, Biafra, Yakubu Gowon) over general ",
-    "ones (the region, the leader).\n",
+    "- Every entity must be a NAME: a person, place, organisation or event.\n",
+    "- Never write about the passage itself. Do not return entries such as ",
+    "\"no information\", \"not mentioned\", \"unknown\" or \"not part of it\". ",
+    "If the passage contains no relationships, return empty lists.\n",
+    "- Keep each entity to a few words. Never write a sentence as an entity.\n",
+    "- Keep each relation phrase under four words.\n",
+    "- Prefer specific entities (Enugu, Biafra, Yakubu Gowon, Nigeria, Joseph, Buhari) over general ",
+    "ones (the region, persident, the leader).\n",
     "- List every relationship you find, up to 12.\n",
     "- Do not add anything the passage does not support.\n\n",
     "PASSAGE:\n", passage
@@ -158,6 +175,9 @@ cache_file <- file.path("cache", paste0("extraction_", article$slug, ".rds"))
 
 extraction <- cache_or_run(cache_file, {
 
+## Connect to the model running on your own machine
+## We are using local Ollama model. You can always use a different LLM
+## 
   chat <- chat_ollama(model = LLM_MODEL,
                       api_args = list(keep_alive = "10m"))
 
@@ -190,14 +210,14 @@ extraction <- cache_or_run(cache_file, {
   ## Combine the passages and drop duplicates. The same relationship often
   ## appears in more than one passage, which is a sign it matters rather than a
   ## problem, but it should appear once in the graph.
-  entities  <- bind_rows(ent_list) |>
-    mutate(name = str_squish(name)) |>
-    filter(nzchar(name)) |>
+  entities  <- bind_rows(ent_list) %>%
+    mutate(name = str_squish(name)) %>%
+    filter(nzchar(name)) %>%
     distinct(name, .keep_all = TRUE)
 
-  relations <- bind_rows(rel_list) |>
-    mutate(across(c(subject, relation, object), str_squish)) |>
-    filter(nzchar(subject), nzchar(object)) |>
+  relations <- bind_rows(rel_list) %>%
+    mutate(across(c(subject, relation, object), str_squish)) %>%
+    filter(nzchar(subject), nzchar(object)) %>%
     distinct(subject, object, .keep_all = TRUE)
 
   list(entities = entities, relations = relations)

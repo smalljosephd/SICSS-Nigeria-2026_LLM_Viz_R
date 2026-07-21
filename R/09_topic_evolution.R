@@ -6,8 +6,7 @@
 # another, and so on. Attaching the year to those shares and plotting them
 # gives the picture of themes rising and falling.
 #
-# This is a good part to write live. The model is already fitted and the labels
-# already collected, so nothing here waits on anything slow.
+# 
 #
 # Needs   :  cache/topic_fit.rds, cache/stm_input.rds,
 #            cache/topic_labels.rds, cache/corpus.rds
@@ -27,17 +26,17 @@ cat("Themes in the model:", K, "\n")
 ## ---- Labels, with a fallback ------------------------------------------------
 ## Script 08 asks the model to name each theme. Small local models sometimes
 ## return nothing, so this checks the labels are usable before relying on them.
-## If they are missing or incomplete, the chart falls back to "Topic 1", "Topic
-## 2" and still draws -- better than stopping mid-session.
+## If they are missing or incomplete, the chart falls back to "Topic 1",
+##  "Topic 2" and still plots -- better than stopping mid-session.
 
 labels_ok <- FALSE
 
 if (file.exists("cache/topic_labels.rds")) {
   topic_labels <- readRDS("cache/topic_labels.rds")
-
+  
   labels_ok <- !is.null(topic_labels$labels) &&
-               nrow(topic_labels$labels) == K &&
-               all(nzchar(topic_labels$labels$name))
+    nrow(topic_labels$labels) == K &&
+    all(nzchar(topic_labels$labels$name))
 }
 
 if (labels_ok) {
@@ -79,8 +78,8 @@ print(head(round(theta, 3), 3))
 ## ---- Reshape ----------------------------------------------------------------
 ## ggplot draws one line per group, so the table needs one row per document per
 ## theme rather than one column per theme.
-theta_long <- theta |>
-  pivot_longer(starts_with("T"), names_to = "topic", values_to = "share") |>
+theta_long <- theta %>%
+  pivot_longer(starts_with("T"), names_to = "topic", values_to = "share") %>%
   mutate(topic = recode(topic, !!!label_lookup))
 
 ## ---- Average within each time point -----------------------------------------
@@ -92,8 +91,8 @@ theta_long <- theta |>
 ## between 0 and 1. An average of proportions still lies between 0 and 1. A
 ## smoothing line fitted through scattered points does not: loess will happily
 ## draw a curve through minus twenty per cent, which is not a possible value.
-theta_year <- theta_long |>
-  group_by(Year, topic) |>
+theta_year <- theta_long %>%
+  group_by(Year, topic) %>%
   summarise(share = mean(share), n_docs = n(), .groups = "drop")
 
 cat("Time points:", n_distinct(theta_year$Year), "\n")
@@ -103,8 +102,8 @@ cat("Documents per time point:", min(theta_year$n_docs), "to",
 ## A quick check on whether the model found themes or just labelled documents.
 ## If most documents are almost entirely one theme, the model has separated the
 ## documents rather than finding anything shared between them.
-dominant <- theta_long |>
-  group_by(Year) |>
+dominant <- theta_long %>%
+  group_by(Year) %>%
   summarise(top_share = max(share), .groups = "drop")
 if (mean(dominant$top_share) > 0.85) {
   warning("Most documents are dominated by a single theme (mean top share ",
@@ -131,9 +130,9 @@ p_evolution <- ggplot(theta_year, aes(Year, share, colour = topic)) +
   scale_colour_brewer(palette = "Dark2") +
   labs(title    = paste("Themes over time:", cp$label),
        subtitle = if (labels_ok)
-                    "Average share per time point. Names written by the model."
-                  else
-                    "Average share per time point.",
+         "Average share per time point. Names written by the model."
+       else
+         "Average share per time point.",
        x = NULL, y = "Share of text", colour = NULL) +
   theme(legend.position = "bottom")
 
@@ -156,8 +155,8 @@ save_figure(p_evolution, "04_topic_evolution", width = 10, height = 6)
 ## choosing which three is a decision worth naming out loud.
 #
 # keep <- label_lookup[c("T1", "T3", "T5")]
-# theta_long |>
-#   filter(topic %in% keep) |>
+# theta_long %>%
+#   filter(topic %in% keep) %>%
 #   ggplot(aes(Year, share, colour = topic)) +
 #   geom_point(alpha = 0.3, size = 1.3) +
 #   geom_smooth(method = "loess", span = 0.5, se = FALSE, linewidth = 1.1) +
@@ -174,3 +173,4 @@ save_figure(p_evolution, "04_topic_evolution", width = 10, height = 6)
 # plot(effects, "Year", method = "continuous", topics = 1, model = fit)
 
 cat("\nSecond half complete.\n")
+cat("Optional closer: 10_semantic_map.R\n")

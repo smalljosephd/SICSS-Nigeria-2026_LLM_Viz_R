@@ -14,7 +14,7 @@
 # time keeps each request simple, and it works. It costs one call per theme,
 # which is fine because the result is cached.
 #
-# RUN THIS BEFORE THE SESSION -- it calls the model.
+# RUN THIS and Cache -- it calls the model.
 #
 # Needs   :  cache/topic_fit.rds, Ollama running with the model pulled
 # Produces:  cache/topic_labels.rds
@@ -56,7 +56,9 @@ label_one <- function(chat, words) {
     paste0("These word stems all come from one theme found in a set of ",
            "documents:\n\n", words, "\n\n",
            "Reply with a short label of two to four words describing what the ",
-           "theme is about. The words are stems, so 'secur' means security and ",
+           "theme is about.",
+           "The theme is for topic evolution chart based on the Nigerian civil war Wikipedia article's revisions from 2005 to 2025",
+           "The words are stems, so for instance, 'secur' means security and ",
            "'econom' means economic."),
     type = type_label
   )
@@ -64,30 +66,30 @@ label_one <- function(chat, words) {
 }
 
 topic_labels <- cache_or_run("cache/topic_labels.rds", {
-
+  
   ## keep_alive holds the model in memory between calls, so only the first one
   ## pays the loading cost
   chat <- chat_ollama(model = LLM_MODEL,
                       api_args = list(keep_alive = "10m"))
-
+  
   names_vec <- character(K)
   for (i in seq_len(K)) {
     cat("Labelling topic", i, "of", K, "... ")
     names_vec[i] <- label_one(chat, top_words[i])
     cat(names_vec[i], "\n")
   }
-
+  
   result <- list(labels = data.frame(topic = seq_len(K),
                                      name  = names_vec,
                                      stringsAsFactors = FALSE))
-
+  
   ## Stop rather than cache a bad answer. Without this check, an empty or
   ## partial result gets saved and quietly reloaded on every later run.
   if (nrow(result$labels) != K || any(!nzchar(result$labels$name))) {
     stop("The model did not return a label for every theme. Nothing cached. ",
          "Try a smaller model, or write the labels by hand (see below).")
   }
-
+  
   result
 })
 

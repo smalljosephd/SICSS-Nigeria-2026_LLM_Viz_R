@@ -36,8 +36,7 @@ print(p_compare)
 save_figure(p_compare, "03_comparison", width = 14, height = 6)
 
 ## ---- What the picture shows -------------------------------------------------
-## Worth stating plainly while both are on screen:
-##
+## 
 ##  - The left graph tells you which words keep company. It cannot tell you
 ##    what connects them: "nigeria" and "lagos" are linked, and that is all.
 ##

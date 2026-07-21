@@ -1,7 +1,7 @@
 # =============================================================================
 # 06_load_corpus.R  |  Choose and load a dated corpus
 # -----------------------------------------------------------------------------
-# The chart in script 09 shows how themes change over time, so every document
+# The topic evolution chart in script 09 shows how themes change over time, so every document
 # needs a date. The Wikipedia article from script 01 has none, which is why the
 # second half of the session loads different data.
 #
@@ -30,6 +30,7 @@ source("R/utils.R")
 ##              06a_check_snapshots.R to have given a good verdict.
 ## "tweets"     tested, bundled, no connection needed. The safe choice.
 ## "sotu"       needs one extra package installed from GitHub.
+
 CORPUS <- "wikipedia"
 #CORPUS <- "tweets"
 
@@ -56,7 +57,7 @@ if (CORPUS == "wikipedia") {
   corpus_df <- tibble(
     text = as.character(corp_sotu),
     Year = as.integer(format(quanteda::docvars(corp_sotu, "Date"), "%Y"))
-  ) |> filter(!is.na(Year))
+  ) %>% filter(!is.na(Year))
 
   cat("Addresses loaded:", nrow(corpus_df), "\n")
   EXTRA_STOP   <- c("congress", "government", "president", "united", "states",

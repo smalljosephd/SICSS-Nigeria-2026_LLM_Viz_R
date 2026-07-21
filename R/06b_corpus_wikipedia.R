@@ -4,8 +4,9 @@
 # Fetches one version of an article per year and returns them as dated
 # documents, ready for the topic model.
 #
-# HOW THIS CONNECTS TO THE MORNING SESSION. The students scraped article text
-# and revision history. This uses both: the revision history tells us which
+# HOW THIS CONNECTS TO THE MORNING SESSION. You've (likely) scraped Wikipedia
+# article text and revision history. 
+# This uses both: the revision history tells us which
 # version existed in a given year, and we take the text of that version.
 #
 # WHAT WE ARE NOT USING, and why:
@@ -113,18 +114,18 @@ if (nrow(snapshots) < 8) {
 ## untouched, but themes now have to appear across many chunks to be found.
 CHUNK_WORDS <- 300
 
-corpus_df <- snapshots |>
-  rowwise() |>
-  mutate(piece = list(chunk_text(text, words_per_chunk = CHUNK_WORDS))) |>
-  ungroup() |>
-  select(Year, piece) |>
-  tidyr::unnest(piece) |>
-  rename(text = piece) |>
+corpus_df <- snapshots %>%
+  rowwise() %>%
+  mutate(piece = list(chunk_text(text, words_per_chunk = CHUNK_WORDS))) %>%
+  ungroup() %>%
+  select(Year, piece) %>%
+  tidyr::unnest(piece) %>%
+  rename(text = piece) %>%
   arrange(Year)
 
 cat("\nChunks of about", CHUNK_WORDS, "words:", nrow(corpus_df), "documents\n")
 
-chunks_per_year <- corpus_df |> count(Year)
+chunks_per_year <- corpus_df %>% count(Year)
 cat("Per year:", min(chunks_per_year$n), "to", max(chunks_per_year$n), "chunks\n")
 
 if (nrow(corpus_df) < 100) {

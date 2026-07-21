@@ -9,8 +9,7 @@
 # variable. Setting prevalence = ~ s(Year) lets each theme rise and fall over
 # time, which is what makes the chart in script 09 possible.
 #
-# RUN THIS BEFORE THE SESSION. Fitting takes a minute or two; the result is
-# cached, so the session-day run loads it instantly.
+# Fitting takes a minute or two; run and  cache the result, 
 #
 # Needs   :  cache/corpus.rds  (from 06_load_corpus.R)
 # Produces:  cache/topic_fit.rds, cache/stm_input.rds
@@ -29,12 +28,12 @@ cat("Corpus:", cp$label, "|", ndoc(corp), "documents\n")
 ##
 ##   tokens_wordstem  treats "govern", "government" and "governing" as one word
 ##   dfm_trim         drops very rare words, which add noise and slow the fit
-dfm_topic <- corp |>
-  tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE) |>
-  tokens_tolower() |>
-  tokens_remove(c(stopwords("en"), cp$extra_stop)) |>
-  tokens_wordstem() |>
-  dfm() |>
+dfm_topic <- corp %>%
+  tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(c(stopwords("en"), cp$extra_stop)) %>%
+  tokens_wordstem() %>%
+  dfm() %>%
   dfm_trim(min_termfreq = 5, min_docfreq = 3)
 
 cat("Documents x words:", paste(dim(dfm_topic), collapse = " x "), "\n")
@@ -83,8 +82,8 @@ fit <- cache_or_run("cache/topic_fit.rds", {
 ## ---- Read the themes --------------------------------------------------------
 ## Each theme comes back as a list of words. Two lists are printed:
 ##
-##   Highest Prob  the commonest words in the theme
-##   FREX          words common in this theme and rare in the others, which
+##   Highest Prob: is the commonest words in the theme
+##   FREX: is the words common in this theme and rare in the others, which
 ##                 usually describes the theme better
 ##
 ## Reading these and deciding what each theme is about is the traditional next

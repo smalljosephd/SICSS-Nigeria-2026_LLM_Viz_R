@@ -1,14 +1,13 @@
 # =============================================================================
 # 01_get_article.R  |  Get one Wikipedia article and clean it
 # -----------------------------------------------------------------------------
-# Downloads the article named in 00_setup.R (ARTICLE_TITLE) and strips it down
-# to plain prose.
+# This scripe downloads the article named in 00_setup.R (ARTICLE_TITLE) and strips it down to plain prose.
 #
 # The saved file is named after the article, so switching ARTICLE_TITLE gives a
 # separate cache rather than overwriting the previous one. Both can then sit
 # side by side and you can move between them freely.
 #
-# Needs internet. If the download fails, the bundled sample article is used, so
+# This script needs internet. If the download fails, the bundled sample article is used, so
 # everything downstream still runs.
 #
 # Produces:  cache/article_<title>.rds  and  cache/article.rds
@@ -27,6 +26,7 @@ cache_file <- file.path("cache", paste0("article_", slug, ".rds"))
 ## ---- Download ----------------------------------------------------------------
 ## tryCatch stops a failed download from ending the script. On a dry run with no
 ## connection, the bundled sample is used instead and work continues.
+
 article_raw <- tryCatch({
   message("Fetching from Wikipedia: ", ARTICLE_TITLE)
   fetch_wikipedia(ARTICLE_TITLE)

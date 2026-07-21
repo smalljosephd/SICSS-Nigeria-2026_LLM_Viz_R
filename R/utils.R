@@ -46,16 +46,16 @@ cache_or_run <- function(path, expr, refresh = FALSE) {
 #   redirects   = 1  follows redirects, so a short title finds the right page
 # -----------------------------------------------------------------------------
 fetch_wikipedia <- function(title) {
-  request("https://en.wikipedia.org/w/api.php") |>
+  request("https://en.wikipedia.org/w/api.php") %>%
     req_url_query(action      = "query",
                   prop        = "extracts",
                   explaintext = "1",
                   format      = "json",
                   redirects   = "1",
-                  titles      = title) |>
-    req_user_agent("SICSS-Nigeria 2026 teaching session") |>
-    req_perform() |>
-    resp_body_json() |>
+                  titles      = title) %>%
+    req_user_agent("SICSS-Nigeria 2026 teaching session") %>%
+    req_perform() %>%
+    resp_body_json() %>%
     (\(j) j$query$pages[[1]]$extract)()
 }
 
@@ -69,14 +69,14 @@ fetch_wikipedia <- function(title) {
 # and flattens all whitespace to single spaces.
 # -----------------------------------------------------------------------------
 clean_wiki <- function(txt) {
-  txt |>
-    str_remove_all("(?s)== See also ==.*$") |>
-    str_remove_all("(?s)== References ==.*$") |>
-    str_remove_all("(?s)== External links ==.*$") |>
-    str_remove_all("(?s)== Notes ==.*$") |>
-    str_remove_all("==+[^=]+==+") |>
-    str_replace_all("\\([^)]*\\)", " ") |>
-    str_replace_all("\\s+", " ") |>
+  txt %>%
+    str_remove_all("(?s)== See also ==.*$") %>%
+    str_remove_all("(?s)== References ==.*$") %>%
+    str_remove_all("(?s)== External links ==.*$") %>%
+    str_remove_all("(?s)== Notes ==.*$") %>%
+    str_remove_all("==+[^=]+==+") %>%
+    str_replace_all("\\([^)]*\\)", " ") %>%
+    str_replace_all("\\s+", " ") %>%
     str_squish()
 }
 
@@ -96,18 +96,18 @@ clean_wiki <- function(txt) {
 # -----------------------------------------------------------------------------
 load_wikitext <- function(path) {
   lines <- read_lines(path, locale = locale(encoding = "UTF-8"))
-
+  
   is_title <- str_detect(lines, "^\\s*= [^=].+[^=] =\\s*$")  # article starts
   is_head  <- str_detect(lines, "^\\s*=.*=\\s*$")            # any heading line
-
+  
   titles <- str_squish(str_remove_all(lines[is_title], "="))
-
-  tibble(doc_id = cumsum(is_title), text = lines) |>
-    filter(!is_head, str_squish(text) != "") |>
-    mutate(text = str_replace_all(text, "@-@", "-")) |>   # restore hyphens
-    group_by(doc_id) |>
-    summarise(text = paste(str_squish(text), collapse = " "), .groups = "drop") |>
-    filter(doc_id > 0) |>
+  
+  tibble(doc_id = cumsum(is_title), text = lines) %>%
+    filter(!is_head, str_squish(text) != "") %>%
+    mutate(text = str_replace_all(text, "@-@", "-")) %>%   # restore hyphens
+    group_by(doc_id) %>%
+    summarise(text = paste(str_squish(text), collapse = " "), .groups = "drop") %>%
+    filter(doc_id > 0) %>%
     mutate(title = titles[doc_id])
 }
 
@@ -126,23 +126,23 @@ load_wikitext <- function(path) {
 #   min_chars  shortest word to keep
 # -----------------------------------------------------------------------------
 sentence_cooccurrence <- function(txt, top_n = 30, min_chars = 4) {
-
-  sentences <- tibble(text = txt) |>
-    unnest_tokens(sentence, text, token = "sentences") |>
+  
+  sentences <- tibble(text = txt) %>%
+    unnest_tokens(sentence, text, token = "sentences") %>%
     mutate(sent_id = row_number())
-
-  sent_words <- sentences |>
-    unnest_tokens(word, sentence) |>
-    anti_join(get_stopwords(), by = "word") |>
+  
+  sent_words <- sentences %>%
+    unnest_tokens(word, sentence) %>%
+    anti_join(get_stopwords(), by = "word") %>%
     filter(str_detect(word, "^[a-z]+$"), nchar(word) >= min_chars)
-
-  keep <- sent_words |>
-    count(word, sort = TRUE) |>
-    slice_head(n = top_n) |>
+  
+  keep <- sent_words %>%
+    count(word, sort = TRUE) %>%
+    slice_head(n = top_n) %>%
     pull(word)
-
-  sent_words |>
-    filter(word %in% keep) |>
+  
+  sent_words %>%
+    filter(word %in% keep) %>%
     pairwise_count(item = word, feature = sent_id, sort = TRUE, upper = FALSE)
 }
 
@@ -158,10 +158,10 @@ sentence_cooccurrence <- function(txt, top_n = 30, min_chars = 4) {
 # only renames and leaves the wrong column in position two.
 # -----------------------------------------------------------------------------
 build_relation_graph <- function(relations) {
-  relations |>
-    filter(subject != "", object != "", !is.na(subject), !is.na(object)) |>
-    select(from = subject, to = object, relation) |>
-    graph_from_data_frame(directed = TRUE) |>
+  relations %>%
+    filter(subject != "", object != "", !is.na(subject), !is.na(object)) %>%
+    select(from = subject, to = object, relation) %>%
+    graph_from_data_frame(directed = TRUE) %>%
     as_tbl_graph()
 }
 
@@ -200,8 +200,8 @@ save_figure <- function(plot, name, width = 9, height = 6) {
 # still in place, which is why clean_wikitext() exists below.
 # -----------------------------------------------------------------------------
 fetch_revision_at <- function(title, date) {
-
-  resp <- request("https://en.wikipedia.org/w/api.php") |>
+  
+  resp <- request("https://en.wikipedia.org/w/api.php") %>%
     req_url_query(
       action  = "query",
       prop    = "revisions",
@@ -213,16 +213,16 @@ fetch_revision_at <- function(title, date) {
       rvslots = "main",
       format  = "json",
       formatversion = 2
-    ) |>
-    req_user_agent("SICSS-Nigeria 2026 teaching session") |>
-    req_timeout(60) |>
-    req_retry(max_tries = 3) |>   # connections drop; try again rather than stop
+    ) %>%
+    req_user_agent("SICSS-Nigeria 2026 teaching session") %>%
+    req_timeout(60) %>%
+    req_retry(max_tries = 3) %>%   # connections drop; try again rather than stop
     req_perform()
-
+  
   page <- resp_body_json(resp)$query$pages[[1]]
-
+  
   if (is.null(page$revisions) || length(page$revisions) == 0) return(NULL)
-
+  
   rev <- page$revisions[[1]]
   list(timestamp = rev$timestamp,
        text      = rev$slots$main$content)
@@ -248,23 +248,23 @@ fetch_revision_at <- function(title, date) {
 # link text and body prose are kept.
 # -----------------------------------------------------------------------------
 clean_wikitext <- function(txt) {
-
+  
   if (is.null(txt) || length(txt) == 0) return("")
   if (is.na(txt) || !nzchar(txt))       return("")
   x <- txt
-
+  
   ## editorial comments, invisible on the page
   x <- str_remove_all(x, "(?s)<!--.*?-->")
-
+  
   ## reference tags, with their contents
   x <- str_remove_all(x, "(?s)<ref[^>]*/>")
   x <- str_remove_all(x, "(?s)<ref[^>]*>.*?</ref>")
-
+  
   ## block elements whose contents are not prose
   x <- str_remove_all(x, "(?s)<(table|gallery|imagemap|timeline|math)[^>]*>.*?</\\1>")
   ## remaining HTML tags: drop the tag, keep any text
   x <- str_remove_all(x, "<[^>]{1,200}>")
-
+  
   ## templates {{...}}. Removing innermost first and repeating handles nesting,
   ## which is common: an infobox containing citations containing dates.
   for (i in 1:12) {
@@ -274,43 +274,43 @@ clean_wikitext <- function(txt) {
   }
   x <- str_remove_all(x, "\\{\\|(?s).*?\\|\\}")   # wiki tables
   x <- str_remove_all(x, "[{}]")                    # unbalanced leftovers
-
+  
   ## images and media: remove the whole link, caption included
   x <- str_remove_all(x, "\\[\\[(?i:File|Image|Media)\\s*:[^\\]]*\\]\\]")
-
+  
   ## category and interwiki links carry no prose
   x <- str_remove_all(x, "\\[\\[(?i:Category)\\s*:[^\\]]*\\]\\]")
   x <- str_remove_all(x, "\\[\\[[a-z]{2,3}:[^\\]]*\\]\\]")
-
+  
   ## internal links: keep the words a reader would see
   ##   [[Niger Delta|the delta]]  ->  the delta
   ##   [[Nigeria]]                ->  Nigeria
   x <- str_replace_all(x, "\\[\\[[^\\]|]*\\|([^\\]]*)\\]\\]", "\\1")
   x <- str_replace_all(x, "\\[\\[([^\\]]*)\\]\\]", "\\1")
-
+  
   ## external links: keep the label, drop the address
   x <- str_replace_all(x, "\\[https?://\\S+\\s+([^\\]]*)\\]", "\\1")
   x <- str_remove_all(x, "\\[https?://[^\\]]*\\]")
   x <- str_remove_all(x, "https?://\\S+")
-
+  
   ## the appendix sections and everything after them
   x <- str_remove(x, "(?is)\\n==+\\s*(see also|references|notes|further reading|external links|bibliography|sources|citations)\\s*==+.*$")
-
+  
   ## heading lines themselves
   x <- str_remove_all(x, "(?m)^\\s*=+[^=\\n]+=+\\s*$")
-
+  
   ## formatting marks and list bullets
   x <- str_remove_all(x, "'{2,5}")
   x <- str_remove_all(x, "(?m)^[*#:;]+\\s*")
   x <- str_remove_all(x, "(?m)^\\s*\\|.*$")
   x <- str_remove_all(x, "(?m)^\\s*!.*$")
-
+  
   ## HTML entities
   x <- str_replace_all(x, "&nbsp;", " ")
   x <- str_replace_all(x, "&amp;", "&")
   x <- str_replace_all(x, "&quot;", "\"")
   x <- str_replace_all(x, "&[a-z]{2,8};", " ")
-
+  
   ## collapse whitespace
   x <- str_replace_all(x, "\\s+", " ")
   str_squish(x)
@@ -340,16 +340,16 @@ clean_wikitext <- function(txt) {
 # min_words, so no text is discarded.
 # -----------------------------------------------------------------------------
 chunk_text <- function(txt, words_per_chunk = 300, min_words = 120) {
-
+  
   w <- str_split(str_squish(txt), " ")[[1]]
   w <- w[nzchar(w)]
   if (length(w) < min_words) return(character(0))
-
+  
   idx <- ceiling(seq_along(w) / words_per_chunk)
   out <- unname(vapply(split(w, idx), paste, character(1), collapse = " "))
-
+  
   keep <- str_count(out, "\\S+") >= min_words
-
+  
   ## fold a short tail into the previous chunk rather than losing it
   if (length(out) > 1 && !keep[length(out)]) {
     out[length(out) - 1] <- paste(out[length(out) - 1], out[length(out)])
@@ -357,6 +357,6 @@ chunk_text <- function(txt, words_per_chunk = 300, min_words = 120) {
     keep <- keep[-length(keep)]
     keep[length(keep)] <- TRUE
   }
-
+  
   out[keep]
 }

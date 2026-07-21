@@ -25,7 +25,8 @@ if (!dir.exists("R")) {
 ## data/     inputs you download or that ship with the project
 ## cache/    saved model output, so slow steps run only once
 ## prebuilt/ figures saved as images, used as a fallback during the session
-## output/   anything you export for sharing
+## output/   anything exported for sharing
+
 for (d in c("data", "cache", "prebuilt", "output")) {
   dir.create(d, showWarnings = FALSE)
 }
@@ -50,16 +51,17 @@ rm(pkgs)
 
 ## ---- Shared settings --------------------------------------------------------
 ## One seed for the whole project. Graph layouts and the 2-D reduction in
-## script 06 are random; fixing the seed keeps figures identical between your
-## rehearsal and the live session.
+## script 06 are random; fixing the seed keeps figures identical.
+
 SEED <- 2026
 
 ## The model we call through Ollama. Pull it once, in a terminal:
 ##   ollama pull llama3.2:3b
 ## A smaller model answers faster, which matters when the machine has no GPU.
 ## Swap to "llama3.1" if your machine is quick and you want better output.
-LLM_MODEL <- "llama3.2:3b"
+
 #LLM_MODEL <- "llama3.1"
+LLM_MODEL <- "llama3.2:3b"
 
 ## Which article the knowledge-graph scripts use.
 ##
@@ -74,6 +76,7 @@ LLM_MODEL <- "llama3.2:3b"
 ##   "Nigeria"
 ##   "2023 Nigerian general election"
 ##   "End SARS"
+
 ARTICLE_TITLE <- "Nigerian Civil War"
 
 ## A consistent look for every figure.
@@ -83,4 +86,5 @@ COL_EDGE  <- "#5B8FB9"   # edges, classical graph
 COL_LLM   <- "#B85042"   # nodes, LLM graph
 COL_GREY  <- "#9AA0A6"   # edges, LLM graph
 
+## Print sugegst message if all process are completed without error
 cat("Setup complete. Seed:", SEED, "| Article:", ARTICLE_TITLE, "\n")

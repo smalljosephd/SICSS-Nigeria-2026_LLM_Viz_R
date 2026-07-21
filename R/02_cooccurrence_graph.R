@@ -27,35 +27,39 @@ cat("Article:", article$title, "|", article$n_chars, "characters\n")
 ## Words that survive the standard stop-word list but carry no subject matter.
 ## "also" and "made" appeared as well-connected nodes in an early run, which is
 ## a good illustration of why this list is never finished.
+
 FILLER <- c("also", "made", "would", "could", "one", "two", "many", "however",
             "later", "following", "including", "although", "became", "well")
 
-co_pairs <- sentence_cooccurrence(article$text, top_n = 32, min_chars = 4) |>
-  filter(!(item1 %in% FILLER), !(item2 %in% FILLER))
+co_pairs <- sentence_cooccurrence(article$text, 
+                                  top_n = 32, 
+                                  min_chars = 4) %>%
+  filter(!(item1 %in% FILLER), 
+         !(item2 %in% FILLER))
 
 cat("Word pairs found:", nrow(co_pairs), "\n")
-print(head(co_pairs, 8))
+print(head(co_pairs, 10))
 
 ## ---- Build the graph --------------------------------------------------------
-## MIN_EDGE is the knob to turn during the session. Raising it drops the weaker
-## links and clears the picture. Show this live: the text has not changed, only
-## the threshold has. Where to draw that line is the analyst's decision, and
-## making it visible is part of the lesson.
-MIN_EDGE <- 1        # try 1, then 2, then 3
+## MIN_EDGE is the knob to adjust. Raising it drops the weaker
+## links and clears the picture. 
+## The text has not changed, only the threshold has. Where to draw that line is the analyst's decision, and
 
-co_graph <- co_pairs |>
-  filter(n >= MIN_EDGE) |>
-  graph_from_data_frame(directed = FALSE) |>
-  as_tbl_graph() |>
+MIN_EDGE <- 3        # try 1, then 2, then 3, 5, 10
+
+co_graph <- co_pairs %>%
+  filter(n >= MIN_EDGE) %>%
+  graph_from_data_frame(directed = FALSE) %>%
+  as_tbl_graph() %>%
   mutate(degree = centrality_degree())
 
 cat("Graph:", gorder(co_graph), "words,", gsize(co_graph), "links\n")
 
 ## The best-connected words, which are usually the article's main subjects
-co_graph |>
-  as_tibble() |>
-  arrange(desc(degree)) |>
-  slice_head(n = 5) |>
+co_graph %>%
+  as_tibble() %>%
+  arrange(desc(degree)) %>%
+  slice_head(n = 5) %>%
   print()
 
 ## ---- Draw -------------------------------------------------------------------

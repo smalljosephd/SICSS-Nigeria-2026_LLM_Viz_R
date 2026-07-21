@@ -53,7 +53,7 @@ saveRDS(list(graph = llm_graph, plot = p_llm), "cache/llm_graph.rds")
 save_figure(p_llm, "02_llm_graph")
 
 ## ---- Where this leads -------------------------------------------------------
-## This is one article, drawn as one picture. The same extraction step, run
+## This is one article, drawn as one graph. The same extraction step, run
 ## across hundreds of documents and stored in a graph database, is what tools
 ## such as Neo4j GraphRAG do -- the graph is then queried rather than viewed
 ## ("how is X connected to Y?"). The step you have just run is the core of it.

@@ -2,7 +2,7 @@
 # run_all.R  |  Run the whole project from start to finish
 # -----------------------------------------------------------------------------
 # Useful for the rehearsal run and for rebuilding everything after a change.
-# During the session, run the numbered scripts one at a time instead, so a
+# Run the numbered scripts one at a time instead, so a
 # problem in one step does not take the rest down with it.
 #
 # The steps that call the model or fit the topic model cache their results, so
