@@ -1,6 +1,6 @@
 # LLM Visualisation in R
 
-##SICSS-Nigeria 2026, Day 3 (Wednesday 22 July 2026)
+## SICSS-Nigeria 2026, Day 3 (Wednesday 22 July 2026)
 
 ## By Joseph David.
 
