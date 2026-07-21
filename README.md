@@ -1,7 +1,8 @@
-# LLM Visualization in R
+# LLM Visualisation in R
 
-SICSS-Nigeria 2026, Day 3. Joseph David.
-Wednesday 22 July 2026, 13:30–15:30 WAT.
+##SICSS-Nigeria 2026, Day 3 (Wednesday 22 July 2026)
+
+## By Joseph David.
 
 Two graphs, each built twice: first by counting words, then with a language
 model doing the part counting cannot do.
