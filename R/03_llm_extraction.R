@@ -42,7 +42,7 @@ cat("Article:", article$title, "|", article$n_chars, "characters\n")
 ## ---- The schema: the shape of the answer -------------------------------------
 ## One entity: what it is called, and what kind of thing it is.
 type_entity <- type_object(
-  name = type_string("Entity name as written in the text, e.g. Lagos, Enugu, Biafra, United States, Bola Tinubu, Chukwuemeka Odumegwu Ojukwu, Obafemi Awolowo, Joseph David, Peter Obi, SICSS, University of Uyo"),
+  name = type_string("Entity name as written in the text/passage, e.g. Lagos, Enugu, Biafra, United States, Arewa, Chukwuemeka Odumegwu Ojukwu, Obafemi Awolowo, Joseph David, Peter Obi, SICSS, University of Uyo"),
   type = type_string("One of: Person, Place, Organisation, Event, Institution, Company, Political Party, Group")
 )
 
@@ -51,7 +51,7 @@ type_entity <- type_object(
 ##   "Lagos" -> "is the largest city in" -> "Nigeria"
 type_relation <- type_object(
   subject  = type_string("The entity the statement is about"),
-  relation = type_string("Short verb phrase, e.g. is the capital of, member of, associated with, party to, joined, associate of"),
+  relation = type_string("Short verb phrase, e.g. is the capital of, member of, associated with, party to, joined, associate of. Typically the nature of relationship or association"),
   object   = type_string("The entity the subject relates to")
 )
 
@@ -76,14 +76,14 @@ focus_by_article <- list(
   ## and organisations, and the relationships worth pulling out are about who
   ## fought whom, who led what, and which places were involved.
   "Nigerian Civil War" = paste(
-    "Focus on: which people or persons led which side or organisation;", 
-    "which regions, states or cities were involved and on which side;", 
-    "which countries or bodies supported, supplied or mediated;", 
-    "and which events or operations happened at which places;",
-    "What was the number of causalty;",
-    "which events led to the war; what triggered the war;",
-    "Who won or lost the war; what actions were taken to end or prevent reoccurent."
-  ),
+    "Focus on: which people or persons led which side or organisation or group;", 
+    "which Nigerian regions, states, or cities were involved and on which side;", 
+    "which countries or bodies or groups supported, supplied or mediated;", 
+    "which events or operations happened at which places;",
+    "where there causalties? how many, by who or group;",
+    "victims of the war",
+    "which events or actions or activities led to the war; what triggered the war;",
+    "Who won or lost the war; what actions were taken to end or prevent its reoccurence."),
 
   "End SARS" = paste(
     "Focus on: which organisations or units were involved; which people or",
@@ -156,17 +156,17 @@ build_prompt <- function(passage) {
     "between them.\n\n",
     focus, "\n\n",
     "Rules:\n",
-    "- Only include a relationship the passage states or clearly implies.\n",
+    "- Only include an entiry or relationship the passage states or clearly implies.\n",
     "- Every entity must be a NAME: a person, place, organisation or event.\n",
+    "- Don't include any entity, relationship, person, place, organisation or event that is not in the passage.\n",
     "- Never write about the passage itself. Do not return entries such as ",
     "\"no information\", \"not mentioned\", \"unknown\" or \"not part of it\". ",
-    "If the passage contains no relationships, return empty lists.\n",
+    "- If the passage contains no relationships, return empty lists.\n",
     "- Keep each entity to a few words. Never write a sentence as an entity.\n",
-    "- Keep each relation phrase under four words.\n",
-    "- Prefer specific entities (Enugu, Biafra, Yakubu Gowon, Nigeria, Joseph, Buhari) over general ",
-    "ones (the region, persident, the leader).\n",
-    "- List every relationship you find, up to 12.\n",
-    "- Do not add anything the passage does not support.\n\n",
+    "- Keep each relation phrase under four words. If its acronym exist, use instead. For instance, use IPOB instead of Indigenous People of Biafra, etc.\n",
+    "- Prefer specific entities (e.g., Enugu, Biafra, Yakubu Gowon) over general ones (the region, persident, the leader).\n",
+    "- List every relationship you find, up to 15 or 20 or 30.\n",
+    "- Do not add anything the passage does not support or not included.\n\n",
     "PASSAGE:\n", passage
   )
 }

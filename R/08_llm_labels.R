@@ -57,7 +57,7 @@ label_one <- function(chat, words) {
            "documents:\n\n", words, "\n\n",
            "Reply with a short label of two to four words describing what the ",
            "theme is about.",
-           "The theme is for topic evolution chart based on the Nigerian civil war Wikipedia article's revisions from 2005 to 2025",
+           "The theme is for topic evolution chart based on President Trumps's tweet during his first presidency the Nigerian civil war Wikipedia article's revisions from 2005 to 2025",
            "The words are stems, so for instance, 'secur' means security and ",
            "'econom' means economic."),
     type = type_label

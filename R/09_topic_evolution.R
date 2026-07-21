@@ -173,4 +173,3 @@ save_figure(p_evolution, "04_topic_evolution", width = 10, height = 6)
 # plot(effects, "Year", method = "continuous", topics = 1, model = fit)
 
 cat("\nSecond half complete.\n")
-cat("Optional closer: 10_semantic_map.R\n")
